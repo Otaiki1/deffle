@@ -7,6 +7,7 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 error Error__CreateRaffle();
 contract Deffle{
+    
     event Deffle__RaffleCreated(uint id, address indexed raffleOwner);
 
     enum RaffleState{
@@ -59,7 +60,10 @@ contract Deffle{
         idToRaffle[id].owner = payable(msg.sender);
         idToRaffle[id].raffleState= RaffleState.Open;
 
-        emit Deffle__RaffleCreated(id, msg.sender); 
+        //update idlist array
+        idList.push(id);
 
+        emit Deffle__RaffleCreated(id, msg.sender); 
+        
     }
 }
