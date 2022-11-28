@@ -6,8 +6,9 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 error Error__CreateRaffle();
+error Error__EnterRaffle();
 contract Deffle{
-    
+
     event Deffle__RaffleCreated(uint id, address indexed raffleOwner);
 
     enum RaffleState{
@@ -66,4 +67,19 @@ contract Deffle{
         emit Deffle__RaffleCreated(id, msg.sender); 
         
     }
+
+    function enterRaffle(uint256 raffleId) external payable{
+
+        require(raffleId > 0);
+        require(idToRaffle[raffleId].raffleState == RaffleState.Open);
+        require(msg.value >= idToRaffle[raffleId].entranceFee);
+        require(idToRaffle[raffleId].deadline > block.timestamp);
+        require(idToRaffle[raffleId].participants.length <= idToRaffle[raffleId].maxTickets);
+        
+        //update the array of participants
+        idToRaffle[raffleId].participants.push(payable(msg.sender));
+        idToRaffle[raffleId].balance += msg.value;
+    }
+
+    
 }
