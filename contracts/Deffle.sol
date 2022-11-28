@@ -83,6 +83,25 @@ contract Deffle{
         idToRaffle[raffleId].participants.push(payable(msg.sender));
         idToRaffle[raffleId].balance += msg.value;
     }
+
+    function checkUpkeep(bytes memory /*checkdata */)
+    public view returns(
+        bool upkeepNeeded,
+        bytes memory performData 
+    ){
+        uint i;
+        for(i = 0; i < idList.length; i+=1){
+            Raffle memory currentRaffle = idToRaffle[i];
+            bool isOpen = RaffleState.Open == currentRaffle.raffleState;
+            bool timePassed = block.timestamp > currentRaffle.deadline;
+            bool hasBalance  = currentRaffle.balance > 0;
+            bool hasPlayers = currentRaffle.participants.length > 0;
+            
+            upkeepNeeded = (isOpen && timePassed && hasBalance && hasPlayers);
+            return(upkeepNeeded, "0x0");
+        }   
+    }
     
+
 
 }
