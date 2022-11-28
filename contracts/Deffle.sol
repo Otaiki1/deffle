@@ -69,17 +69,20 @@ contract Deffle{
     }
 
     function enterRaffle(uint256 raffleId) external payable{
-
-        require(raffleId > 0);
-        require(idToRaffle[raffleId].raffleState == RaffleState.Open);
-        require(msg.value >= idToRaffle[raffleId].entranceFee);
-        require(idToRaffle[raffleId].deadline > block.timestamp);
-        require(idToRaffle[raffleId].participants.length <= idToRaffle[raffleId].maxTickets);
+        if((raffleId > 0) ||
+         (idToRaffle[raffleId].raffleState == RaffleState.Open)||
+         (msg.value >= idToRaffle[raffleId].entranceFee)||
+         (idToRaffle[raffleId].deadline > block.timestamp)||
+         (idToRaffle[raffleId].participants.length <= idToRaffle[raffleId].maxTickets)
+        ){
+            revert Error__EnterRaffle();
+        }
+        
         
         //update the array of participants
         idToRaffle[raffleId].participants.push(payable(msg.sender));
         idToRaffle[raffleId].balance += msg.value;
     }
-
     
+
 }
