@@ -7,6 +7,7 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 error Error__CreateRaffle();
 error Error__EnterRaffle();
+error Error__UpkeepNotTrue();
 contract Deffle{
 
     event Deffle__RaffleCreated(uint id, address indexed raffleOwner);
@@ -89,8 +90,8 @@ contract Deffle{
         bool upkeepNeeded,
         bytes memory performData 
     ){
-        uint i;
-        for(i = 0; i < idList.length; i+=1){
+        uint8 i;
+        for(i = 0; i < idList.length; i++){
             Raffle memory currentRaffle = idToRaffle[i];
             bool isOpen = RaffleState.Open == currentRaffle.raffleState;
             bool timePassed = block.timestamp > currentRaffle.deadline;
@@ -98,10 +99,25 @@ contract Deffle{
             bool hasPlayers = currentRaffle.participants.length > 0;
             
             upkeepNeeded = (isOpen && timePassed && hasBalance && hasPlayers);
-            return(upkeepNeeded, "0x0");
+            return(upkeepNeeded, abi.encode(i));
         }   
     }
-    
+
+    function performUpkeep(bytes calldata /* performData*/ ) external {
+
+        (bool upkeepNeeded, bytes memory idInBytes) = checkUpkeep("");
+        uint8 idConverted = abi.decode(idInBytes,(uint8));
+        if(!upkeepNeeded){
+            revert Error__UpkeepNotTrue();
+        }
+
+        Raffle memory currentRaffle = idToRaffle[idConverted];
+
+        currentRaffle.raffleState = RaffleState.Calculating;
+        //request random number
+        
+        
+    }
 
 
 }
