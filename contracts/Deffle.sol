@@ -11,6 +11,7 @@ error Error__UpkeepNotTrue();
 contract Deffle is VRFConsumerBaseV2{
 
     event Deffle__RaffleCreated(uint id, address indexed raffleOwner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     enum RaffleState{
         Open,
@@ -137,7 +138,13 @@ contract Deffle is VRFConsumerBaseV2{
 
         currentRaffle.raffleState = RaffleState.Calculating;
         //request random number
-        
+        uint256 requestId = i_vrfCoordinator.requestRandomWords(
+            i_gasLane,
+            i_subscriptionId, 
+            REQUEST_CONFIRMATIONS, 
+            i_callbackGasLimit, 
+            NUM_WORDS);
+        emit RequestedRaffleWinner(requestId);
         
     }
 
