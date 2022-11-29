@@ -137,9 +137,15 @@ contract Deffle is VRFConsumerBaseV2{
             bool hasBalance  = currentRaffle.balance > 0;
             bool hasPlayers = currentRaffle.participants.length > 0;
             
-            upkeepNeeded = (isOpen && timePassed && hasBalance && hasPlayers);
-            return(upkeepNeeded, abi.encode(i));
+            bool _upkeepNeeded = (isOpen && timePassed && hasBalance && hasPlayers);
+            if(_upkeepNeeded && i > 0){
+                upkeepNeeded = _upkeepNeeded;
+                performData = abi.encode(i);
+                break;
+            }
+        
         }   
+        
     }
 
     function performUpkeep(bytes calldata /* performData*/ ) external {
