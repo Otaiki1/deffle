@@ -8,7 +8,7 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 error Error__CreateRaffle();
 error Error__EnterRaffle();
 error Error__UpkeepNotTrue();
-contract Deffle{
+contract Deffle is VRFConsumerBaseV2{
 
     event Deffle__RaffleCreated(uint id, address indexed raffleOwner);
 
@@ -39,7 +39,14 @@ contract Deffle{
     address payable public owner;
     uint256 public creationFee;
 
-    constructor(uint256 _creationFee){
+    //creating an instatnce of vrfCoordinator
+    VRFCoordinatorV2Interface public immutable i_vrfCoordinator;
+
+    constructor(uint256 _creationFee,
+    address vrfCoordinatorV2
+    )
+    VRFConsumerBaseV2(vrfCoordinatorV2)
+    {
         owner = payable(msg.sender);
         creationFee = _creationFee;
     }
