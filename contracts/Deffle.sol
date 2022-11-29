@@ -9,11 +9,13 @@ error Error__CreateRaffle();
 error Error__EnterRaffle();
 error Error__UpkeepNotTrue();
 error Error__RafflePaymentFailed();
+error Error__NotOwner();
 contract Deffle is VRFConsumerBaseV2{
 
     event Deffle__RaffleCreated(uint raffleId, address indexed raffleOwner);
     event RequestedRaffleWinner(uint256 indexed requestId);
     event Deffle__WinnerPicked(uint raffleId, address indexed raffleWinner);
+    event Deffle__EarningsWithdrawn(uint indexed _deffleEarnings);
 
     enum RaffleState{
         Open,
@@ -43,6 +45,7 @@ contract Deffle is VRFConsumerBaseV2{
     address payable public owner;
     uint256 public creationFee;
     uint256 public feePercent;
+    uint256 public deffleEarnings;
 
     //creating an instatnce of vrfCoordinator
     VRFCoordinatorV2Interface public immutable i_vrfCoordinator;
@@ -84,6 +87,10 @@ contract Deffle is VRFConsumerBaseV2{
         if(msg.value < creationFee){
             revert Error__CreateRaffle();
         }
+
+        //update deffle earnings/creation fee balance
+        deffleEarnings += msg.value;
+
         //Update the mapping with inputted data
         id++;
         idToRaffle[id].raffleData = _raffleData;
@@ -110,7 +117,7 @@ contract Deffle is VRFConsumerBaseV2{
         ){
             revert Error__EnterRaffle();
         }
-        
+
         
         //update the array of participants
         idToRaffle[raffleId].participants.push(payable(msg.sender));
@@ -191,5 +198,19 @@ contract Deffle is VRFConsumerBaseV2{
         pay = _balance - charge; 
     } 
     
+    function withdrawDeffleEarnings() external {
+        if(msg.sender != owner){
+            revert Error__NotOwner();
+        }
+        uint _deffleEarnings = deffleEarnings;
+        deffleEarnings = 0;
+        (bool success, ) = owner.call{value: _deffleEarnings}("");
+        //check
+        if(!success){
+            revert Error__RafflePaymentFailed();
+        }
+        emit Deffle__EarningsWithdrawn(_deffleEarnings);
+
+    }
 
 }
