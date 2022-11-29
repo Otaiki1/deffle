@@ -8,10 +8,12 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 error Error__CreateRaffle();
 error Error__EnterRaffle();
 error Error__UpkeepNotTrue();
+error Error__RafflePaymentFailed();
 contract Deffle is VRFConsumerBaseV2{
 
-    event Deffle__RaffleCreated(uint id, address indexed raffleOwner);
+    event Deffle__RaffleCreated(uint raffleId, address indexed raffleOwner);
     event RequestedRaffleWinner(uint256 indexed requestId);
+    event Deffle__WinnerPicked(uint raffleId, address indexed raffleWinner);
 
     enum RaffleState{
         Open,
@@ -29,6 +31,7 @@ contract Deffle is VRFConsumerBaseV2{
         address payable owner;
         RaffleState raffleState;
         uint256 balance;
+        address payable raffleWinner;
     }
 
     //a mapping of id to Raffles
@@ -39,6 +42,7 @@ contract Deffle is VRFConsumerBaseV2{
     uint256 id;
     address payable public owner;
     uint256 public creationFee;
+    uint256 public feePercent;
 
     //creating an instatnce of vrfCoordinator
     VRFCoordinatorV2Interface public immutable i_vrfCoordinator;
@@ -50,16 +54,21 @@ contract Deffle is VRFConsumerBaseV2{
     uint16 public constant REQUEST_CONFIRMATIONS = 3;
     uint32 public constant NUM_WORDS = 1;
 
+    //keep track of raffle requesting randomness
+    uint256 currentId;
+
     constructor(uint256 _creationFee,
         address vrfCoordinatorV2,
         bytes32 gasLane, //keyhash 
         uint64 subscriptionId,
-        uint32 callbackGasLimit
+        uint32 callbackGasLimit,
+        uint256 _feePercent
     )
     VRFConsumerBaseV2(vrfCoordinatorV2)
     {
         owner = payable(msg.sender);
         creationFee = _creationFee;
+        feePercent = _feePercent;
         //chainlinkstuff
         i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
         i_gasLane = gasLane;
@@ -134,6 +143,7 @@ contract Deffle is VRFConsumerBaseV2{
             revert Error__UpkeepNotTrue();
         }
 
+        currentId = idConverted;
         Raffle memory currentRaffle = idToRaffle[idConverted];
 
         currentRaffle.raffleState = RaffleState.Calculating;
@@ -148,5 +158,38 @@ contract Deffle is VRFConsumerBaseV2{
         
     }
 
+    function fulfillRandomWords(
+        uint256, /*request id*/
+        uint256[] memory randomWords
+    ) internal override{
+
+        Raffle memory currentRaffle = idToRaffle[currentId];
+
+        uint256 indexOfWinner = randomWords[0] % currentRaffle.participants.length;
+        address payable _raffleWinner =  currentRaffle.participants[indexOfWinner];
+
+        //update state variables
+        currentRaffle.raffleWinner = _raffleWinner;
+        currentRaffle.raffleState = RaffleState.Closed;
+        //calculate how much to pay winner;
+        //calculate how much goes to owner of raffle
+        (uint winnersPay, uint ownersPay) = getPaymentAmount(currentRaffle.balance, feePercent);
+        //Pay winners and owner
+        (bool success, ) = _raffleWinner.call{value: winnersPay}("");
+        (bool success2, ) = currentRaffle.owner.call{value: ownersPay}("");
+        //check
+        if(!success && !success2){
+            revert Error__RafflePaymentFailed();
+        }
+        emit Deffle__WinnerPicked(currentId, _raffleWinner);
+        
+    }
+
+    function getPaymentAmount(uint _balance, uint _feePercent) pure public returns(uint pay, uint charge){
+        uint totalAmount = (_balance * (100 + _feePercent)/100);
+        charge = totalAmount - _balance;
+        pay = _balance - charge; 
+    } 
+    
 
 }
