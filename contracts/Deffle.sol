@@ -41,14 +41,29 @@ contract Deffle is VRFConsumerBaseV2{
 
     //creating an instatnce of vrfCoordinator
     VRFCoordinatorV2Interface public immutable i_vrfCoordinator;
+     //chainlink variables
+    bytes32 public i_gasLane;
+    uint64 public i_subscriptionId;
+    uint32 public i_callbackGasLimit;
+
+    uint16 public constant REQUEST_CONFIRMATIONS = 3;
+    uint32 public constant NUM_WORDS = 1;
 
     constructor(uint256 _creationFee,
-    address vrfCoordinatorV2
+        address vrfCoordinatorV2,
+        bytes32 gasLane, //keyhash 
+        uint64 subscriptionId,
+        uint32 callbackGasLimit
     )
     VRFConsumerBaseV2(vrfCoordinatorV2)
     {
         owner = payable(msg.sender);
         creationFee = _creationFee;
+        //chainlinkstuff
+        i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
+        i_gasLane = gasLane;
+        i_subscriptionId = subscriptionId ;
+        i_callbackGasLimit = callbackGasLimit;
     }
     
 
