@@ -27,7 +27,7 @@ contract Deffle is VRFConsumerBaseV2{
         bytes32 raffleData;
         uint256 entranceFee;
         uint256 deadline;
-        uint256 startTime;
+        bytes passCode;
         uint8 maxTickets;
         address payable[] participants;
         address payable owner;
@@ -83,7 +83,8 @@ contract Deffle is VRFConsumerBaseV2{
     function createRaffle(bytes32 _raffleData,
     uint256 _entranceFee,
     uint256 _deadline,
-    uint8 _maxTickets ) external payable{
+    uint8 _maxTickets,
+    bytes memory _passCode ) external payable{
         if(msg.value < creationFee){
             revert Error__CreateRaffle();
         }
@@ -96,10 +97,10 @@ contract Deffle is VRFConsumerBaseV2{
         idToRaffle[id].raffleData = _raffleData;
         idToRaffle[id].entranceFee = _entranceFee;
         idToRaffle[id].deadline = _deadline;
-        idToRaffle[id].startTime = block.timestamp;
         idToRaffle[id].maxTickets = _maxTickets;
         idToRaffle[id].owner = payable(msg.sender);
         idToRaffle[id].raffleState= RaffleState.Open;
+        idToRaffle[id].passCode= _passCode;
 
         //update idlist array
         idList.push(id);
@@ -108,12 +109,14 @@ contract Deffle is VRFConsumerBaseV2{
         
     }
 
-    function enterRaffle(uint256 raffleId) external payable{
+    function enterRaffle(uint256 raffleId, bytes memory _passCode) external payable{
+         Raffle memory currentRaffle = idToRaffle[raffleId];
         if((raffleId > 0) ||
-         (idToRaffle[raffleId].raffleState == RaffleState.Open)||
-         (msg.value >= idToRaffle[raffleId].entranceFee)||
-         (idToRaffle[raffleId].deadline > block.timestamp)||
-         (idToRaffle[raffleId].participants.length <= idToRaffle[raffleId].maxTickets)
+         (currentRaffle.raffleState == RaffleState.Open)||
+         (msg.value >= currentRaffle.entranceFee)||
+         (currentRaffle.deadline > block.timestamp)||
+         (currentRaffle.participants.length <= currentRaffle.maxTickets)||
+         (keccak256(currentRaffle.passCode)  != keccak256(_passCode))
         ){
             revert Error__EnterRaffle();
         }
