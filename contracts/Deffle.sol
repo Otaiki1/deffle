@@ -60,8 +60,8 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     event RequestedRaffleWinner(uint256 indexed requestId);
     event Deffle__WinnerPicked(uint raffleId, address indexed raffleWinner);
     event Deffle__EarningsWithdrawn(uint indexed _deffleEarnings);
-    constructor(uint256 _creationFee,
-        address vrfCoordinatorV2,
+    constructor(address vrfCoordinatorV2,
+        uint256 _creationFee,
         bytes32 gasLane, //keyhash 
         uint64 subscriptionId,
         uint32 callbackGasLimit,
@@ -128,7 +128,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     }
 
     function checkUpkeep(bytes memory /*checkdata */)
-    public view returns(
+    public view override returns(
         bool upkeepNeeded,
         bytes memory performData 
     ){
@@ -151,7 +151,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         
     }
 
-    function performUpkeep(bytes calldata /* performData*/ ) external {
+    function performUpkeep(bytes calldata /* performData*/ ) external override {
 
         (bool upkeepNeeded, bytes memory idInBytes) = checkUpkeep("");
         uint8 idConverted = abi.decode(idInBytes,(uint8));
