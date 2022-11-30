@@ -201,12 +201,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         
     }
 
-    function getPaymentAmount(uint _balance, uint _feePercent) pure public returns(uint pay, uint charge){
-        uint totalAmount = (_balance * (100 + _feePercent)/100);
-        charge = totalAmount - _balance;
-        pay = _balance - charge; 
-    } 
-    
+ 
     function withdrawDeffleEarnings() external {
         if(msg.sender != owner){
             revert Error__NotOwner();
@@ -222,4 +217,46 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
 
     }
 
+    /** Getter Functions */
+
+    function getRaffleState(uint raffleId) public view returns (RaffleState) {
+        return idToRaffle[raffleId].raffleState;
+    }
+
+    function getNumWords() public pure returns (uint256) {
+        return NUM_WORDS;
+    }
+
+    function getRequestConfirmations() public pure returns (uint256) {
+        return REQUEST_CONFIRMATIONS;
+    }
+
+    function getRaffleWinner(uint raffleId) public view returns (address) {
+        return idToRaffle[raffleId].raffleWinner;
+    }
+
+    function getPlayers(uint raffleId) public view returns (address payable[] memory) {
+        address payable[] storage tempArray = idToRaffle[raffleId].participants;
+        return tempArray;
+    }
+
+    function getDeadline(uint raffleId) public view returns (uint256) {
+        return idToRaffle[raffleId].deadline;
+    }
+
+
+    function getEntranceFee(uint raffleId) public view returns (uint256) {
+        return idToRaffle[raffleId].entranceFee;
+    }
+
+    function getNumberOfPlayers(uint raffleId) public view returns (uint256) {
+        return idToRaffle[raffleId].participants.length;
+    }
+
+    //Pure Functions
+    function getPaymentAmount(uint _balance, uint _feePercent) pure public returns(uint pay, uint charge){
+        uint totalAmount = (_balance * (100 + _feePercent)/100);
+        charge = totalAmount - _balance;
+        pay = _balance - charge; 
+    } 
 }
