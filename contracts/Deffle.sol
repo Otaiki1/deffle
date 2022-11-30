@@ -35,7 +35,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     //a mapping of id to Raffles
     mapping(uint256 => Raffle) public idToRaffle;
     //an array of all ids
-    uint256[] public idList;
+    uint256[] idList;
 
     uint256 id;
     address payable public owner;
@@ -262,4 +262,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         charge = totalAmount - _balance;
         pay = _balance - charge; 
     } 
+    function getIdList() public view returns (uint256[] memory) {
+        return idList;
+    }
 }
