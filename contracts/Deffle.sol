@@ -87,7 +87,8 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     bytes memory _passCode ) external payable{
         if(msg.value < creationFee ||
             _deadline < block.timestamp ||
-            _maxTickets <= 1 ){
+            _maxTickets <= 1 ||
+            _entranceFee <= 0){
             revert Error__CreateRaffle();
         }
 
