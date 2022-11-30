@@ -5,7 +5,7 @@ const{ expect } = require("chai")
 const toBytes = (str) =>  ethers.utils.formatBytes32String(str);
 const fromBytes = (byt) => ethers.utils.parseBytes32String(byt)
 const toEther = (str) => ethers.utils.parseEther(str);
-const fromEther = (eth) => ethers.utils.formatEther(eth);
+const fromEther = (eth) => Number(ethers.utils.formatEther(eth));
 
 const FUTURE_TIME = 60 * 20;
 !developmentChains.includes(network.name) 
@@ -90,17 +90,68 @@ const FUTURE_TIME = 60 * 20;
             })
             
             it("successfully creates a raffle and emits the right events", async() =>{
-                await expect( deffle.connect(addr2).createRaffle(correctStrData,
-                                                                correctEntranceFee,
-                                                                correctDeadline,
-                                                                correctMaxTickets,
-                                                                correctPassCode,
-                                                                {value: correctCreationFee}))
-                                    .to.emit(
-                                                deffle,
-                                                "Deffle__RaffleCreated"
-                                            ).withArgs(1, addr2.address);
+                await expect( deffle
+                    .connect(addr2)
+                    .createRaffle(
+                        correctStrData,
+                        correctEntranceFee,
+                        correctDeadline,
+                        correctMaxTickets,
+                        correctPassCode,
+                    {value: correctCreationFee}
+                    )
+                )
+                .to.emit(
+                    deffle,
+                    "Deffle__RaffleCreated"
+                ).withArgs(1, addr2.address);
+            })
 
+            it("successfully creates a raffle and update state variables", async() => {
+
+                const deffleEarningsBeforeRaffleCreation = fromEther(await deffle.deffleEarnings());
+                
+                const txResponse = await deffle.connect(addr2)
+                    .createRaffle(
+                        correctStrData,
+                        correctEntranceFee,
+                        correctDeadline,
+                        correctMaxTickets,
+                        correctPassCode,
+                    {value: correctCreationFee}
+                    )
+                const txReceipt = await txResponse.wait(1);
+                const raffleId = (txReceipt.events[0].args.raffleId).toString();
+
+                // console.log("RAFFLE ID____----", raffleId)
+                // console.log("deffle brfore____----", deffleEarningsBeforeRaffleCreation)
+                const deffleEarningsAfterRaffleCreation = fromEther(await deffle.deffleEarnings());
+                // console.log("deffle after ____----", deffleEarningsAfterRaffleCreation)
+
+                //ensure deffle earnings has increased
+                console.log("TESTING To ENSURE DEFFLE EARNINGS UPDATED")
+                expect(deffleEarningsAfterRaffleCreation).to.be.gt(deffleEarningsBeforeRaffleCreation);
+                
+                //check raffle struct
+                const createdRaffle = await deffle.idToRaffle(raffleId);
+                let [strData, entrFee, corrDead, passCde, corrMaxTick, ownerAddr, raffState]  = createdRaffle
+                    // console.log(strData)
+                console.log("TESTING FOR STRUCT UPDATE")
+                expect(strData).to.eq(correctStrData);
+                expect(entrFee).to.eq(correctEntranceFee);
+                expect(corrDead).to.eq(correctDeadline);
+                expect(passCde).to.eq(correctPassCode);
+                expect(corrMaxTick).to.eq(Number(correctMaxTickets));
+                expect(ownerAddr).to.eq(addr2.address);
+                expect(raffState).to.eq(0);
+
+                //Check id list ARRAY
+                console.log("TESTING FOR idListArray UPDATE")
+                const idListArray = await deffle.getIdList();
+                expect(idListArray.length).to.eq(1)
+
+                
+                
             })
         })
     })
