@@ -9,6 +9,13 @@ require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
+  defaultNetwork: "hardhat",
+  networks: {
+    hardhat:{
+      chainId: 31337,
+      blockConfirmations: 1
+    }
+  },
   namedAccounts:{
     deployer:{
       default: 0,
