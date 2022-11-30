@@ -12,7 +12,7 @@ module.exports = async function({ getNamedAccounts, deployments }) {
   let vrfCoordinatorV2Address, subscriptionId;
 
   if(developmentChains.includes(network.name)){
-    const vrfCoordinatorMockContract = await ethers.getContract("VRFCoordinatorV2Mock")
+    const vrfCoordinatorMockContract = await ethers.getContract("VRFCoordinatorV2Mock");
     vrfCoordinatorV2Address = vrfCoordinatorMockContract.address
     const transactionResponse = await vrfCoordinatorMockContract.createSubscription();
     const transactionReceipt  = await transactionResponse.wait(1);
@@ -29,15 +29,14 @@ module.exports = async function({ getNamedAccounts, deployments }) {
   const callbackGasLimit = networkConfig[chainId]["callbackGasLimit"];
   const feePercent = networkConfig[chainId]["feePercent"];
 
-  const args = [vrfCoordinatorV2Address, creationFee, gasLane, subscriptionId, callbackGasLimit]
+  const args = [vrfCoordinatorV2Address, creationFee, gasLane, subscriptionId, callbackGasLimit, feePercent]
 
   const deffle = await deploy("Deffle", {
     from: deployer,
     args: args,
-    logs: true,
+    log: true,
     waitConfirmations: network.config.blockConfirmations || 1,
   })
-
   if(!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY){
     log("verifying....");
     await verify(deffle.address, args)
