@@ -13,12 +13,13 @@ const FUTURE_TIME = 60 * 20;
     : describe("Deffle Unit Tests", async() => {
 
         let deffle, vrfCoordinatorV2Mock, addr1, addr2, accounts
-        console.log("Yayyyyyyyy")
+
         const correctStrData = toBytes("This is the right data")
-        const correctEntranceFee = toEther("1").toString()
-        const correctCreationFee = toEther("0.1").toString();
+        const correctEntranceFee = toEther("1")
+        const correctCreationFee = toEther("0.1")
         const correctPassCode = toBytes("Ot123");
-        const correctDeadline =  await Date.now() + FUTURE_TIME;
+        const correctDeadline =   Date.now() + FUTURE_TIME;
+        const wrongDeadline = Date.now() - FUTURE_TIME
         const correctMaxTickets = "10"
 
         beforeEach(async() => {
@@ -55,12 +56,51 @@ const FUTURE_TIME = 60 * 20;
                 let wrongTransaction
 
                 console.log("Testing Wrong msg.value..")
-               await expect( deffle.connect(addr1).createRaffle(correctStrData,
+                await expect( deffle.connect(addr1).createRaffle(correctStrData,
                      correctEntranceFee,
                      correctDeadline,
                      correctMaxTickets,
                      correctPassCode,
                       {value: toEther("0.01")})).to.be.revertedWith("Error__CreateRaffle");
+
+                console.log("Testing Wrong entranceFee")
+                await expect( deffle.connect(addr1).createRaffle(correctStrData,
+                     0,
+                     correctDeadline,
+                     correctMaxTickets,
+                     correctPassCode,
+                      {value: toEther("0.1")})).to.be.revertedWith("Error__CreateRaffle");
+
+                console.log("Testing Wrong deadline")
+                await expect( deffle.connect(addr1).createRaffle(correctStrData,
+                     correctEntranceFee,
+                     wrongDeadline,
+                     correctMaxTickets,
+                     correctPassCode,
+                      {value: toEther("0.01")})).to.be.revertedWith("Error__CreateRaffle");
+
+                console.log("Testing Wrong max tickets")
+                await expect( deffle.connect(addr1).createRaffle(correctStrData,
+                     correctEntranceFee,
+                     correctDeadline,
+                     1,
+                     correctPassCode,
+                      {value: toEther("0.01")})).to.be.revertedWith("Error__CreateRaffle");
+                   
+            })
+            
+            it("successfully creates a raffle and emits the right events", async() =>{
+                await expect( deffle.connect(addr2).createRaffle(correctStrData,
+                                                                correctEntranceFee,
+                                                                correctDeadline,
+                                                                correctMaxTickets,
+                                                                correctPassCode,
+                                                                {value: correctCreationFee}))
+                                    .to.emit(
+                                                deffle,
+                                                "Deffle__RaffleCreated"
+                                            ).withArgs(1, addr2.address);
+
             })
         })
     })
