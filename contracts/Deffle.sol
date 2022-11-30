@@ -4,18 +4,14 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
 error Error__CreateRaffle();
 error Error__EnterRaffle();
 error Error__UpkeepNotTrue();
 error Error__RafflePaymentFailed();
 error Error__NotOwner();
-contract Deffle is VRFConsumerBaseV2{
-
-    event Deffle__RaffleCreated(uint raffleId, address indexed raffleOwner);
-    event RequestedRaffleWinner(uint256 indexed requestId);
-    event Deffle__WinnerPicked(uint raffleId, address indexed raffleWinner);
-    event Deffle__EarningsWithdrawn(uint indexed _deffleEarnings);
+contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
 
     enum RaffleState{
         Open,
@@ -60,6 +56,10 @@ contract Deffle is VRFConsumerBaseV2{
     //keep track of raffle requesting randomness
     uint256 currentId;
 
+    event Deffle__RaffleCreated(uint raffleId, address indexed raffleOwner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
+    event Deffle__WinnerPicked(uint raffleId, address indexed raffleWinner);
+    event Deffle__EarningsWithdrawn(uint indexed _deffleEarnings);
     constructor(uint256 _creationFee,
         address vrfCoordinatorV2,
         bytes32 gasLane, //keyhash 
