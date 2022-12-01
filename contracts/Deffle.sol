@@ -267,14 +267,20 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     function getMaxPlayers(uint raffleId) public view returns (uint8) {
         return idToRaffle[raffleId].maxTickets;
     }
-
+    function getRaffleBalance(uint raffleId) public view returns (uint) {
+        return idToRaffle[raffleId].balance;
+    }
+    function getIdList() public view returns (uint256[] memory) {
+        return idList;
+    }
+    function getRaffleOwner(uint raffleId) public view returns (address) {
+        return idToRaffle[raffleId].owner;
+    }
     //Pure Functions
     function getPaymentAmount(uint _balance, uint _feePercent) pure public returns(uint pay, uint charge){
         uint totalAmount = (_balance * (100 + _feePercent)/100);
         charge = totalAmount - _balance;
         pay = _balance - charge; 
     } 
-    function getIdList() public view returns (uint256[] memory) {
-        return idList;
-    }
+    
 }
