@@ -191,5 +191,13 @@ const FUTURE_TIME = 60 * 20;
                 await expect( deffle.connect(addr2).enterRaffle(raffleId, correctPassCode, {value: correctEntranceFee}))
                 .to.be.revertedWith("Error__EnterRaffle");
             })
+
+            it("successfully enters a raffle and emits the right events", async()=>{
+                await expect( deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {value: correctEntranceFee}))
+                .to.emit(
+                    deffle,
+                    "Deffle__EnterRaffle"
+                ).withArgs(raffleId, addr3.address, 1);
+            })
         })
     })
