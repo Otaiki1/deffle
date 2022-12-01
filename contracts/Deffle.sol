@@ -57,6 +57,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     uint256 currentId;
 
     event Deffle__RaffleCreated(uint raffleId, address indexed raffleOwner);
+    event Deffle__EnterRaffle(uint raffleId, address indexed participant, uint8 indexed totalParticipants);
     event RequestedRaffleWinner(uint256 indexed requestId);
     event Deffle__WinnerPicked(uint raffleId, address indexed raffleWinner);
     event Deffle__EarningsWithdrawn(uint indexed _deffleEarnings);
@@ -117,7 +118,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         if((raffleId == 0) ||
          (currentRaffle.raffleState != RaffleState.Open)||
          (msg.value < currentRaffle.entranceFee)||
-         (currentRaffle.deadline > block.timestamp)||
+         (currentRaffle.deadline < block.timestamp)||
          (currentRaffle.participants.length == currentRaffle.maxTickets)||
          (keccak256(currentRaffle.passCode)  != keccak256(_passCode))||
          (idList.length < raffleId)||
@@ -130,6 +131,11 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         //update the array of participants
         idToRaffle[raffleId].participants.push(payable(msg.sender));
         idToRaffle[raffleId].balance += msg.value;
+
+        //get total participants
+        uint8 totalParticipants  = getNumberOfPlayers(raffleId);
+        //emit enter raffle event
+        emit Deffle__EnterRaffle(raffleId, msg.sender, totalParticipants);
     }
 
     function checkUpkeep(bytes memory /*checkdata */)
@@ -254,8 +260,12 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         return idToRaffle[raffleId].entranceFee;
     }
 
-    function getNumberOfPlayers(uint raffleId) public view returns (uint256) {
-        return idToRaffle[raffleId].participants.length;
+    function getNumberOfPlayers(uint raffleId) public view returns (uint8) {
+        return uint8(idToRaffle[raffleId].participants.length);
+    }
+
+    function getMaxPlayers(uint raffleId) public view returns (uint8) {
+        return idToRaffle[raffleId].maxTickets;
     }
 
     //Pure Functions
