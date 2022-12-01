@@ -12,12 +12,13 @@ const FUTURE_TIME = 60 * 20;
     ? describe.skip
     : describe("Deffle Unit Tests", async() => {
 
-        let deffle, vrfCoordinatorV2Mock, addr1, addr2, accounts
+        let deffle, vrfCoordinatorV2Mock, addr1, addr2, accounts, addr3
 
         const correctStrData = toBytes("This is the right data")
         const correctEntranceFee = toEther("1")
         const correctCreationFee = toEther("0.1")
         const correctPassCode = toBytes("Ot123");
+        const wrongPassCode = toBytes("rev123");
         const correctDeadline =   Date.now() + FUTURE_TIME;
         const wrongDeadline = Date.now() - FUTURE_TIME
         const correctMaxTickets = "10"
@@ -31,7 +32,7 @@ const FUTURE_TIME = 60 * 20;
             accounts = await ethers.getSigners();
             addr1 = accounts[0];
             addr2 = accounts[1];
-            
+            addr3 = accounts[2];
             // console.log("correctStrData_____", correctStrData, " ---=>", typeof correctStrData )
             // console.log("correctEntranceFee_____", correctEntranceFee, " ---=>", typeof correctEntranceFee )
             // console.log("correctCreationFee_____", correctCreationFee, " ---=>", typeof correctCreationFee )
@@ -152,6 +153,43 @@ const FUTURE_TIME = 60 * 20;
 
                 
                 
+            })
+        })
+        describe("Enter a created raffle", async() => {
+            let raffleId;
+            beforeEach(async() => {
+                const txResponse = await deffle.connect(addr2)
+                    .createRaffle(
+                        correctStrData,
+                        correctEntranceFee,
+                        correctDeadline,
+                        correctMaxTickets,
+                        correctPassCode,
+                    {value: correctCreationFee}
+                    )
+                const txReceipt = await txResponse.wait(1);
+                raffleId = (txReceipt.events[0].args.raffleId).toString();
+            })
+
+            it("reverts when wrong inputs are passed", async() => {
+                //Testing for 0 raffleId
+                await expect( deffle.connect(addr3).enterRaffle(0, correctPassCode, {value: correctEntranceFee}))
+                .to.be.revertedWith("Error__EnterRaffle");
+                //...later, test for closed raffle state
+                //Testing for insufficient msg.value
+                await expect( deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {value: toEther("0.01")}))
+                .to.be.revertedWith("Error__EnterRaffle");
+                //Test for past deadline
+                //...later test fornumber of participants passed
+                //Test for incorrect passCode
+                await expect( deffle.connect(addr3).enterRaffle(raffleId, wrongPassCode, {value: toEther("0.01")}))
+                .to.be.revertedWith("Error__EnterRaffle");
+                //Test for exceedng raffleId
+                await expect( deffle.connect(addr3).enterRaffle(3, correctPassCode, {value: toEther("0.01")}))
+                .to.be.revertedWith("Error__EnterRaffle");
+                //Test to ensure owner cant enter raffle
+                await expect( deffle.connect(addr2).enterRaffle(raffleId, correctPassCode, {value: correctEntranceFee}))
+                .to.be.revertedWith("Error__EnterRaffle");
             })
         })
     })
