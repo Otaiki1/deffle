@@ -114,12 +114,14 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
 
     function enterRaffle(uint256 raffleId, bytes memory _passCode) external payable{
          Raffle memory currentRaffle = idToRaffle[raffleId];
-        if((raffleId > 0) ||
-         (currentRaffle.raffleState == RaffleState.Open)||
-         (msg.value >= currentRaffle.entranceFee)||
+        if((raffleId == 0) ||
+         (currentRaffle.raffleState != RaffleState.Open)||
+         (msg.value < currentRaffle.entranceFee)||
          (currentRaffle.deadline > block.timestamp)||
-         (currentRaffle.participants.length <= currentRaffle.maxTickets)||
-         (keccak256(currentRaffle.passCode)  != keccak256(_passCode))
+         (currentRaffle.participants.length == currentRaffle.maxTickets)||
+         (keccak256(currentRaffle.passCode)  != keccak256(_passCode))||
+         (idList.length < raffleId)||
+         (msg.sender == currentRaffle.owner)
         ){
             revert Error__EnterRaffle();
         }
