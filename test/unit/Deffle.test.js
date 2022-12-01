@@ -199,5 +199,28 @@ const FUTURE_TIME = 60 * 20;
                     "Deffle__EnterRaffle"
                 ).withArgs(raffleId, addr3.address, 1);
             })
+
+            it("successfully enters a raffle and updates state variables", async() => {
+
+                //checkparticipants before raffle entry
+                const participantsBeforeEntry = await deffle.getNumberOfPlayers(raffleId);
+                //check raffle balance before entry
+                const raffleBalanceBeforeEntry = fromEther((await deffle.getRaffleBalance(raffleId)).toString())
+                
+                //enter raffle
+                await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {value: correctEntranceFee});
+
+                const participantsAfterEntry = await deffle.getNumberOfPlayers(raffleId);
+                const participantsList = await deffle.getPlayers(raffleId)
+                
+                const raffleBalanceAfterEntry = fromEther((await deffle.getRaffleBalance(raffleId)).toString())
+
+                expect(participantsAfterEntry).to.be.gt(participantsBeforeEntry)
+                expect(raffleBalanceAfterEntry).to.be.gt(raffleBalanceBeforeEntry)
+
+                //check that person who entered raffle is inside the participants array
+                expect(participantsList[0]).to.eq(addr3.address)
+
+            })
         })
     })
