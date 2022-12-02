@@ -289,5 +289,52 @@ const FUTURE_TIME = 60 * 60 * 1000;
                 expect(upkeepNeeded).to.eq(true)
             })
         })
+
+        describe("performUpkeep", function () {
+            const increaseTime = async() =>{
+                await network.provider.send("evm_increaseTime", [correctDeadline + (FUTURE_TIME)])
+                await network.provider.request({ method: "evm_mine", params: [] })
+            }
+
+            let raffleId; 
+
+            beforeEach(async() => {
+                const txResponse = await deffle.connect(addr2)
+                    .createRaffle(
+                        correctStrData,
+                        correctEntranceFee,
+                        correctDeadline,
+                        correctMaxTickets,
+                        correctPassCode,
+                    {value: correctCreationFee}
+                    )
+                const txReceipt = await txResponse.wait(1);
+                raffleId = (txReceipt.events[0].args.raffleId).toString();
+                
+            })
+
+            it("can only run if checkupkeep is true", async () => {
+                await deffle.enterRaffle(raffleId, correctPassCode, { value: correctEntranceFee })
+                await increaseTime();
+                const tx = await deffle.performUpkeep("0x") 
+                assert(tx)
+            })
+            it("reverts if checkup is false", async () => {
+                await expect(deffle.performUpkeep("0x")).to.be.revertedWith( 
+                    "Error__UpkeepNotTrue"
+                )
+            })
+            it("updates the raffle state and emits a requestId", async () => {
+                
+                await deffle.enterRaffle(raffleId, correctPassCode, { value: correctEntranceFee })
+                await increaseTime();
+                const txResponse = await deffle.performUpkeep("0x") // emits requestId
+                const txReceipt = await txResponse.wait(1) // waits 1 block
+                const raffleState = await deffle.getRaffleState(raffleId) // updates state
+                const requestId = txReceipt.events[1].args.requestId
+                expect(requestId.toNumber()).to.be.gt(0)
+                expect(raffleState).to.eq(1)//0 = open, 1 : calculating
+            })
+        })
         
     })
