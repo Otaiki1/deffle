@@ -275,20 +275,19 @@ const FUTURE_TIME = 60 * 60 * 1000;
                 assert.equal(raffleState.toString() == "1", upkeepNeeded == false)
                 
             })
-            // it("returns false if enough time hasn't passed", async () => {
-            //     await raffle.enterRaffle({ value: raffleEntranceFee })
-            //     await network.provider.send("evm_increaseTime", [interval.toNumber() - 5]) // use a higher number here if this test fails
-            //     await network.provider.request({ method: "evm_mine", params: [] })
-            //     const { upkeepNeeded } = await raffle.callStatic.checkUpkeep("0x") // upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers)
-            //     assert(!upkeepNeeded)
-            // })
-            // it("returns true if enough time has passed, has players, eth, and is open", async () => {
-            //     await raffle.enterRaffle({ value: raffleEntranceFee })
-            //     await network.provider.send("evm_increaseTime", [interval.toNumber() + 1])
-            //     await network.provider.request({ method: "evm_mine", params: [] })
-            //     const { upkeepNeeded } = await raffle.callStatic.checkUpkeep("0x") // upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers)
-            //     assert(upkeepNeeded)
-            // })
+            it("returns false if enough time hasn't passed", async () => {
+                await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, { value: correctEntranceFee })
+                
+                const { upkeepNeeded } = await deffle.callStatic.checkUpkeep("0x") // upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers)
+                expect(upkeepNeeded).to.eq(false)
+            })
+            it("returns true if enough time has passed, has players, eth, and is open", async () => {
+                await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, { value: correctEntranceFee })
+                await network.provider.send("evm_increaseTime", [correctDeadline + 1])
+                await network.provider.request({ method: "evm_mine", params: [] })
+                const { upkeepNeeded } = await deffle.callStatic.checkUpkeep("0x") // upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers)
+                expect(upkeepNeeded).to.eq(true)
+            })
         })
         
     })
