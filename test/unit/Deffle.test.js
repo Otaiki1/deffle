@@ -1,13 +1,14 @@
 const { network, getNamedAccounts, deployments, ethers } = require("hardhat");
 const { developmentChains } = require("../../helper-hardhat-config");
-const{ expect } = require("chai")
+const{assert, expect } = require("chai")
 
 const toBytes = (str) =>  ethers.utils.formatBytes32String(str);
 const fromBytes = (byt) => ethers.utils.parseBytes32String(byt)
 const toEther = (str) => ethers.utils.parseEther(str);
 const fromEther = (eth) => Number(ethers.utils.formatEther(eth));
+const getCurrentTime  = () => Math.round(Date.now() / 1000);
 
-const FUTURE_TIME = 60 * 20;
+const FUTURE_TIME = 60 * 60 * 1000;
 !developmentChains.includes(network.name) 
     ? describe.skip
     : describe("Deffle Unit Tests", async() => {
@@ -19,8 +20,8 @@ const FUTURE_TIME = 60 * 20;
         const correctCreationFee = toEther("0.1")
         const correctPassCode = toBytes("Ot123");
         const wrongPassCode = toBytes("rev123");
-        const correctDeadline =   Date.now() + FUTURE_TIME;
-        const wrongDeadline = Date.now() - FUTURE_TIME
+        const correctDeadline =  getCurrentTime() + FUTURE_TIME ;
+        const wrongDeadline = getCurrentTime() - FUTURE_TIME ;
         const correctMaxTickets = "10"
 
         beforeEach(async() => {
@@ -155,6 +156,7 @@ const FUTURE_TIME = 60 * 20;
                 
             })
         })
+
         describe("Enter a created raffle", async() => {
             let raffleId;
             beforeEach(async() => {
@@ -209,6 +211,8 @@ const FUTURE_TIME = 60 * 20;
                 
                 //enter raffle
                 await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {value: correctEntranceFee});
+                await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {value: correctEntranceFee});
+                await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {value: correctEntranceFee});
 
                 const participantsAfterEntry = await deffle.getNumberOfPlayers(raffleId);
                 const participantsList = await deffle.getPlayers(raffleId)
@@ -223,4 +227,68 @@ const FUTURE_TIME = 60 * 20;
 
             })
         })
+
+        describe("checkUpkeep", async () => {
+            const increaseTime = async() =>{
+                await network.provider.send("evm_increaseTime", [correctDeadline + (FUTURE_TIME)])
+                await network.provider.request({ method: "evm_mine", params: [] })
+            }
+
+            let raffleId; 
+
+            beforeEach(async() => {
+                const txResponse = await deffle.connect(addr2)
+                    .createRaffle(
+                        correctStrData,
+                        correctEntranceFee,
+                        correctDeadline,
+                        correctMaxTickets,
+                        correctPassCode,
+                    {value: correctCreationFee}
+                    )
+                const txReceipt = await txResponse.wait(1);
+                raffleId = (txReceipt.events[0].args.raffleId).toString();
+                
+            })
+            it("returns false if people haven't sent any ETH", async () => {
+                await increaseTime();
+                const { upkeepNeeded } = await deffle.callStatic.checkUpkeep("0x")
+                expect(upkeepNeeded).to.eq(false);
+            })
+            
+            it("returns false if raffle isn't open", async () => {
+                await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, { value: correctEntranceFee })
+
+                
+                await increaseTime();
+
+                // const blockNumBefore = await ethers.provider.getBlockNumber();
+                // const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+                // const timestampBefore = blockBefore.timestamp;
+                // console.log(timestampBefore)
+                await deffle.performUpkeep("0x") // changes the state to calculating
+                    const raffleState = await deffle.getRaffleState(raffleId) // stores the new state
+                    const { upkeepNeeded } = await deffle.checkUpkeep("0x");
+               
+
+                    console.log(upkeepNeeded) // upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers)
+                assert.equal(raffleState.toString() == "1", upkeepNeeded == false)
+                
+            })
+            // it("returns false if enough time hasn't passed", async () => {
+            //     await raffle.enterRaffle({ value: raffleEntranceFee })
+            //     await network.provider.send("evm_increaseTime", [interval.toNumber() - 5]) // use a higher number here if this test fails
+            //     await network.provider.request({ method: "evm_mine", params: [] })
+            //     const { upkeepNeeded } = await raffle.callStatic.checkUpkeep("0x") // upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers)
+            //     assert(!upkeepNeeded)
+            // })
+            // it("returns true if enough time has passed, has players, eth, and is open", async () => {
+            //     await raffle.enterRaffle({ value: raffleEntranceFee })
+            //     await network.provider.send("evm_increaseTime", [interval.toNumber() + 1])
+            //     await network.provider.request({ method: "evm_mine", params: [] })
+            //     const { upkeepNeeded } = await raffle.callStatic.checkUpkeep("0x") // upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers)
+            //     assert(upkeepNeeded)
+            // })
+        })
+        
     })
