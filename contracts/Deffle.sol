@@ -61,7 +61,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     event Deffle__RaffleCreated(uint raffleId, address indexed raffleOwner);
     event Deffle__EnterRaffle(uint raffleId, address indexed participant, uint8 indexed totalParticipants);
     event RequestedRaffleWinner(uint256 indexed requestId);
-    event Deffle__WinnerPicked(uint raffleId, address indexed raffleWinner);
+    event Deffle__WinnerPicked(uint raffleId, address indexed raffleWinner, uint indexed raffleEarnings);
     event Deffle__EarningsWithdrawn(uint indexed _deffleEarnings);
     constructor(address vrfCoordinatorV2,
         uint256 _creationFee,
@@ -202,13 +202,15 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
 
         uint256 indexOfWinner = randomWords[0] % idToRaffle[currentId].participants.length;
         address payable _raffleWinner =  idToRaffle[currentId].participants[indexOfWinner];
+        uint _raffleBalance = idToRaffle[currentId].raffleBalance;
 
         //update state variables
         idToRaffle[currentId].raffleWinner = _raffleWinner;
         idToRaffle[currentId].raffleState = RaffleState.Closed;
+        idToRaffle[currentId].raffleBalance = 0;
         //calculate how much to pay winner;
         //calculate how much goes to owner of raffle
-        (uint winnersPay, uint ownersPay) = getPaymentAmount(idToRaffle[currentId].raffleBalance, feePercent);
+        (uint winnersPay, uint ownersPay) = getPaymentAmount(_raffleBalance, feePercent);
         //Pay winners and owner
         (bool success, ) = _raffleWinner.call{value: winnersPay}("");
         (bool success2, ) = idToRaffle[currentId].owner.call{value: ownersPay}("");
@@ -216,7 +218,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         if(!success && !success2){
             revert Error__RafflePaymentFailed();
         }
-        emit Deffle__WinnerPicked(currentId, _raffleWinner);
+        emit Deffle__WinnerPicked(currentId, _raffleWinner, _raffleBalance);
         
     }
 
