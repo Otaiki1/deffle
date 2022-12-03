@@ -13,6 +13,7 @@ error Error__EnterRaffle();
 error Error__UpkeepNotTrue();
 error Error__RafflePaymentFailed();
 error Error__NotOwner();
+error Error__ZeroAmount();
 contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
 
     enum RaffleState{
@@ -41,8 +42,8 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
 
     uint8 id;
     address payable public owner;
-    uint256 public creationFee;
-    uint256 public feePercent;
+    uint256 public immutable creationFee;
+    uint256 public immutable feePercent;
     uint256 public deffleEarnings;
 
     //creating an instatnce of vrfCoordinator
@@ -57,6 +58,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
 
     //keep track of raffle requesting randomness
     uint256 currentId;
+
 
     event Deffle__RaffleCreated(uint raffleId, address indexed raffleOwner);
     event Deffle__EnterRaffle(uint raffleId, address indexed participant, uint8 indexed totalParticipants);
@@ -149,20 +151,10 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         uint8 sureId;
         for (uint256 i = 0; i < getIdList().length && !upkeepNeeded; i++) {
             bool isOpen = RaffleState.Open == getRaffleState(i+1);
-            // console.logString("The raffle state is ");
-            // console.logUint(uint(getRaffleState(i+1)));
             bool timePassed = block.timestamp > getDeadline(i+1);
-            // console.logString("The time passed is ");
-            // console.logUint(getDeadline(i+1));
-            // console.logUint(block.timestamp);
             bool hasBalance  = getRaffleBalance(i+1) > 0;
-            // console.logString("The raffle balance is ");
-            // console.logUint(getRaffleBalance(i+1));
             bool hasPlayers = getNumberOfPlayers(i+1) > 0;
-            // console.logString("The player amount is ");
-            // console.logUint(getNumberOfPlayers(i+1));
             if (isOpen && timePassed && hasBalance && hasPlayers) {
-                // console.logString("TURN TRUEEEEE");
                 upkeepNeeded = true;
                 sureId = uint8(i+1);
             }
@@ -173,9 +165,6 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     function performUpkeep(bytes calldata /* performData*/ ) external override {
 
         (bool upkeepNeeded, bytes memory idInBytes) = checkUpkeep("0x");
-        // console.log("UpKEEP NEEDED", upkeepNeeded);
-        // console.log("IDDDDD", idInBytes);
-        // uint8 idConverted = 
         if(!upkeepNeeded){
             revert Error__UpkeepNotTrue();
         }
@@ -227,8 +216,13 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         if(msg.sender != owner){
             revert Error__NotOwner();
         }
+        if(deffleEarnings == 0){
+            revert Error__ZeroAmount();
+        }
+
         uint _deffleEarnings = deffleEarnings;
         deffleEarnings = 0;
+        
         (bool success, ) = owner.call{value: _deffleEarnings}("");
         //check
         if(!success){
