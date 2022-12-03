@@ -13,6 +13,11 @@ const REPORT_GAS = process.env.REPORT_GAS;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 const AUTO_FUND = process.env.AUTO_FUND
 
+// set proxy
+// const { ProxyAgent, setGlobalDispatcher } = require("undici");
+// const proxyAgent = new ProxyAgent('http://127.0.0.1:7890'); // change to yours
+// setGlobalDispatcher(proxyAgent);
+
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   defaultNetwork: "hardhat",
@@ -27,6 +32,22 @@ module.exports = {
       saveDeployments: true,
       chainId: 80001,
     }
+  },
+  etherscan: {
+    // yarn hardhat verify --network <NETWORK> <CONTRACT_ADDRESS> <CONSTRUCTOR_PARAMETERS>
+    apiKey: {
+        polygonMumbai: POLYGONSCAN_API_KEY,
+    },
+    // customChains: [
+    //     {
+    //         network: "polygonMumbai",
+    //         chainId: 80001,
+    //         urls: {
+    //             apiURL: "https://api-testnet.polygonscan.com/",
+    //             browserURL: "https://polygonscan.com/",
+    //         },
+    //     },
+    // ],
   },
   namedAccounts:{
     deployer:{

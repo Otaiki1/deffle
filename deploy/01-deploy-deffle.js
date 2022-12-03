@@ -62,7 +62,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   log("Consumer is added");
   if (
     !developmentChains.includes(network.name) &&
-    process.env.ETHERSCAN_API_KEY
+    process.env.POLYGONSCAN_API_KEY
   ) {
     log("verifying....");
     await verify(deffle.address, args);
