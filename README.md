@@ -16,6 +16,8 @@ This has been going for 20+ years in the Football League. There are news of fans
 # 🥳 DEFFLE
 
 Deffle is a solution to this problem by creating an easy to use platform that allows people create transparent trustworthy raffle lotteries on the blockchain , earn from their raffles and also give users trust that the lottery isnt being manipulated at any point in time
+
+
 <!-- 
 [![Hackathon-Video](https://media.giphy.com/media/FQMVedBETa0dVfCB7D/giphy.gif)](https://www.youtube.com/watch?v=MY-cvrlX3ao "Hackathon Video")
 
@@ -58,3 +60,6 @@ This project was made for [Polygon Africa Bootcamp hackathon](https://polygon.te
 
 - [Web Frontend](./Deffle-Frontend)
 - [Contracts](./)
+
+## Contract address
+The contract was deployed on mumbai at [0x5E1325af5F10A29f04Bd1e9EA6076558765B8fe6](https://mumbai.polygonscan.com/address/0x5E1325af5F10A29f04Bd1e9EA6076558765B8fe6)
