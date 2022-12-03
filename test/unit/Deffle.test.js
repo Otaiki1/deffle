@@ -336,5 +336,79 @@ const FUTURE_TIME = 60 * 60 * 1000;
                 expect(raffleState).to.eq(1)//0 = open, 1 : calculating
             })
         })
+
+        describe("fulfillRandomWords", function () {
+            const increaseTime = async() =>{
+                await network.provider.send("evm_increaseTime", [correctDeadline + (FUTURE_TIME)])
+                await network.provider.request({ method: "evm_mine", params: [] })
+            }
+
+            let raffleId; 
+            beforeEach(async () => {
+                const txResponse = await deffle.connect(addr2)
+                .createRaffle(
+                    correctStrData,
+                    correctEntranceFee,
+                    correctDeadline,
+                    correctMaxTickets,
+                    correctPassCode,
+                {value: correctCreationFee}
+                )
+                const txReceipt = await txResponse.wait(1);
+                raffleId = (txReceipt.events[0].args.raffleId).toString();
+                await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, { value: correctEntranceFee })
+                await increaseTime();
+            })
+
+            it("can only be called after performupkeep", async () => {
+                await expect(
+                    vrfCoordinatorV2Mock.fulfillRandomWords(0, deffle.address) // reverts if not fulfilled
+                ).to.be.revertedWith("nonexistent request")
+                await expect(
+                    vrfCoordinatorV2Mock.fulfillRandomWords(1, deffle.address) // reverts if not fulfilled
+                ).to.be.revertedWith("nonexistent request")
+            })
+
+            it("updates state variables and make payouts", async()=> {
+                
+                const raffleBalanceBeforeFulfill = await deffle.getRaffleBalance(raffleId);
+                const ownerBalanceBeforeFulfill = await ethers.provider.getBalance(addr2.address);
+                const winnerBalanceBeforeFulfill = await ethers.provider.getBalance(addr3.address);
+                
+                const txResponse1 = await deffle.performUpkeep("0x") // emits requestId
+                const txReceipt2 = await txResponse1.wait(1) // waits 1 block
+                const requestId = txReceipt2.events[1].args.requestId
+
+                await vrfCoordinatorV2Mock.fulfillRandomWords(requestId, deffle.address) ;
+
+                const raffleBalanceAfterFulfill = await deffle.getRaffleBalance(raffleId);
+                const ownerBalanceAfterFulfill = await ethers.provider.getBalance(addr2.address);
+                const winnerBalanceAfterFulfill = await ethers.provider.getBalance(addr3.address);
+                const raffleState = await deffle.getRaffleState(raffleId) // stores the new state
+                const raffleWinner = await deffle.getRaffleWinner(raffleId);
+
+                expect(raffleState).to.eq(2)
+                expect(raffleWinner).to.eq(addr3.address)//since he was the only participant , he would be winner
+                expect(raffleBalanceBeforeFulfill).to.be.gt(raffleBalanceAfterFulfill)// the balance should have reduced
+                expect(ownerBalanceBeforeFulfill).to.be.lt(ownerBalanceAfterFulfill)//balance should have increased
+                expect(winnerBalanceAfterFulfill).to.be.gt(winnerBalanceBeforeFulfill)//balance should have increased
+            })
+            it("emits the right events upon successful fulfill", async()=> {
+                
+                const raffleBalance = await deffle.getRaffleBalance(raffleId);
+                
+                const txResponse1 = await deffle.performUpkeep("0x") // emits requestId
+                const txReceipt2 = await txResponse1.wait(1) // waits 1 block
+                const requestId = txReceipt2.events[1].args.requestId
+
+                await expect(vrfCoordinatorV2Mock.fulfillRandomWords(requestId, deffle.address)).to
+                .emit(
+                    deffle,
+                    "Deffle__WinnerPicked"
+                ).withArgs(raffleId, addr3.address, raffleBalance); ;
+
+                
+            })
         
     })
+})
