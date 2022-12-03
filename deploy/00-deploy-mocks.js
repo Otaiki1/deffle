@@ -1,26 +1,25 @@
 const { ethers } = require("hardhat");
-const{developmentChains} = require("../helper-hardhat-config");
+const { developmentChains } = require("../helper-hardhat-config");
 
-const BASE_FEE = ethers.utils.parseEther("0.25") // this is the base fee in link (25link)
+const BASE_FEE = ethers.utils.parseEther("0.25"); // this is the base fee in link (25link)
 const GAS_PRICE_LINK = 1e9;
 
-module.exports = async function({ getNamedAccounts, deployments }) {
-
-  const{ deploy, log } = deployments;
+module.exports = async function ({ getNamedAccounts, deployments }) {
+  const { deploy, log } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  if(developmentChains.includes(network.name)){
-    log("Local Network detected!, deploying mocks...")
+  if (developmentChains.includes(network.name)) {
+    log("Local Network detected!, deploying mocks...");
     //deploy a mock
     await deploy("VRFCoordinatorV2Mock", {
-        from: deployer,
-        log: true,
-        args: [BASE_FEE, GAS_PRICE_LINK]
-    })
-    log("MOCKS DEPLOYED _______________________________________________-----------------")
+      from: deployer,
+      log: true,
+      args: [BASE_FEE, GAS_PRICE_LINK],
+    });
+    log(
+      "MOCKS DEPLOYED _______________________________________________-----------------"
+    );
   }
-  
+};
 
-}
-
-module.exports.tags = ["all", "mocks"]
+module.exports.tags = ["all", "mocks"];
