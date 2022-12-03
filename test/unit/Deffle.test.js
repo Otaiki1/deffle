@@ -13,7 +13,7 @@ const FUTURE_TIME = 60 * 60 * 1000;
     ? describe.skip
     : describe("Deffle Unit Tests", async() => {
 
-        let deffle, vrfCoordinatorV2Mock, addr1, addr2, accounts, addr3
+        let deffle, vrfCoordinatorV2Mock, addr1, addr2, accounts, addr3, deployer
 
         const correctStrData = toBytes("This is the right data")
         const correctEntranceFee = toEther("1")
@@ -410,5 +410,74 @@ const FUTURE_TIME = 60 * 60 * 1000;
                 
             })
         
-    })
+        })
+
+        describe("Withdraw Contract earnings", function () {
+            const increaseTime = async() =>{
+                await network.provider.send("evm_increaseTime", [correctDeadline + (FUTURE_TIME)])
+                await network.provider.request({ method: "evm_mine", params: [] })
+            }
+
+            let raffleId; 
+            // it("doesnt allow owner withdraw empty earnings", async() => {
+            //     await expect(deffle.withdrawDeffleEarnings()).to.be.revertedWith(
+            //         "Error__ZeroAmount"
+            //     )
+            // })
+            beforeEach(async () => {
+                const txResponse = await deffle.connect(addr2)
+                .createRaffle(
+                    correctStrData,
+                    correctEntranceFee,
+                    correctDeadline,
+                    correctMaxTickets,
+                    correctPassCode,
+                {value: correctCreationFee}
+                )
+                const txReceipt = await txResponse.wait(1);
+                raffleId = (txReceipt.events[0].args.raffleId).toString();
+                await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, { value: correctEntranceFee })
+                await increaseTime();
+                await deffle.getRaffleBalance(raffleId);
+                
+                const txResponse1 = await deffle.performUpkeep("0x") // emits requestId
+                const txReceipt2 = await txResponse1.wait(1) // waits 1 block
+                const requestId = txReceipt2.events[1].args.requestId
+
+                await vrfCoordinatorV2Mock.fulfillRandomWords(requestId, deffle.address)
+            })
+
+            it("only allows owner to wthdraw deffle earnings", async()=> {
+                await expect(deffle.connect(addr3).withdrawDeffleEarnings()).to.be.revertedWith(
+                    "Error__NotOwner"
+                )
+            })
+            it("Updates state Variables and makes payouts", async()=> {
+                const contractBalanceBeforeWithdrawal =  await deffle.deffleEarnings();
+                const ownerBalanceBeforeWithdrawal =  await ethers.provider.getBalance(addr1.address)
+
+                await deffle.withdrawDeffleEarnings();
+                
+                const contractBalanceAfterWithdrawal =  await deffle.deffleEarnings();
+                const ownerBalanceAfterWithdrawal =  await ethers.provider.getBalance(addr1.address)
+                //they should change
+                expect(contractBalanceAfterWithdrawal).to.be.lt(contractBalanceBeforeWithdrawal);
+                expect(contractBalanceAfterWithdrawal).to.eq(0);
+                expect(ownerBalanceAfterWithdrawal).to.be.gt(ownerBalanceBeforeWithdrawal);
+
+            })
+            it("Should emit right events", async()=> {
+                const contractBalanceBeforeWithdrawal =  await deffle.deffleEarnings();
+
+                await expect(deffle.withdrawDeffleEarnings()).to.emit(
+                    deffle,
+                    "Deffle__EarningsWithdrawn"
+                ).withArgs(contractBalanceBeforeWithdrawal);
+                
+              
+
+            })
+
+        
+        })
 })
