@@ -30,6 +30,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     );
   } else {
     vrfCoordinatorV2Address = networkConfig[chainId]["vrfCoordinatorV2"];
+    subscriptionId = networkConfig[chainId]["subscriptionId"];
   }
 
   const creationFee = networkConfig[chainId]["creationFee"];
