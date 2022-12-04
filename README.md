@@ -62,4 +62,6 @@ This project was made for [Polygon Africa Bootcamp hackathon](https://polygon.te
 - [Contracts](./)
 
 ## Contract address
-The contract was deployed on mumbai at [0x5E1325af5F10A29f04Bd1e9EA6076558765B8fe6](https://mumbai.polygonscan.com/address/0x5E1325af5F10A29f04Bd1e9EA6076558765B8fe6)
+The contract was deployed on mumbai at [0x21190B74b28516c28F486589299A552eB33Dd27a](https://mumbai.polygonscan.com/address/0x21190B74b28516c28F486589299A552eB33Dd27a)
+
+[Successfully verified contract Deffle on Etherscan.](https://mumbai.polygonscan.com/address/0x21190B74b28516c28F486589299A552eB33Dd27a#code)
