@@ -36,7 +36,15 @@ Deffle is not governed by an organisation but by an immutable code (cannot be ch
 ## 👊 Team
 
 - [Sadiq Abdulsamad](https://github.com/Otaiki1)
-- [Pelumi](https://github.com/pelz)
+- [Pelumi](https://github.com/pelzfx)
+
+## ☄️ Stack Used
+- [Polygon](https://polygon.technology/) enables us to deploy contracts in L2 blockchain which helps handle traffic for the rush in the event in buying tickets. 
+
+- [Chainlink](https://chain.link/) decentralized blockchain oracle network built on Ethereum. Enables us to generate transparent randomness to allow FAIRNESS in winner selection process
+
+
+
 <!-- 
 ## ☄️ What's next for NFTicket?
 
@@ -58,10 +66,14 @@ This project was made for [Polygon Africa Bootcamp hackathon](https://polygon.te
 -->
 ## 🔩 Project Structure
 
-- [Web Frontend](./Deffle-Frontend)
+- [Web Frontend]("https://github.com/deffle-frontend")
 - [Contracts](./)
 
 ## Contract address
 The contract was deployed on mumbai at [0x21190B74b28516c28F486589299A552eB33Dd27a](https://mumbai.polygonscan.com/address/0x21190B74b28516c28F486589299A552eB33Dd27a)
 
 [Successfully verified contract Deffle on Etherscan.](https://mumbai.polygonscan.com/address/0x21190B74b28516c28F486589299A552eB33Dd27a#code)
+
+## MORE INFO 
+[Landing Page](https://deffle-landing-page.on.fleek.co/)
+[Live Dapp](https://deffle-frontend-01.vercel.app/)
