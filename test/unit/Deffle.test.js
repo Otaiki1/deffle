@@ -14,7 +14,7 @@ const FUTURE_TIME = 60 * 60 * 1000;
   : describe("Deffle Unit Tests", async () => {
       let deffle, vrfCoordinatorV2Mock, addr1, addr2, accounts, addr3, deployer;
 
-      const correctStrData = toBytes("This is the right data");
+      const correctStrData = "This is the right data";
       const correctEntranceFee = toEther("1");
       const correctCreationFee = toEther("0.1");
       const correctPassCode = toBytes("Ot123");
