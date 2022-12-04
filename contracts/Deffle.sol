@@ -23,7 +23,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     }
 
     struct Raffle{
-        bytes32 raffleData;
+        string raffleData;
         uint256 entranceFee;
         uint256 deadline;
         bytes passCode;
@@ -85,7 +85,7 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     }
     
 
-    function createRaffle(bytes32 _raffleData,
+    function createRaffle(string memory _raffleData,
     uint256 _entranceFee,
     uint256 _deadline,
     uint8 _maxTickets,
@@ -279,6 +279,16 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     }
     function getRaffleOwner(uint raffleId) public view returns (address) {
         return idToRaffle[raffleId].owner;
+    }
+    function getRaffleData(uint raffleId) public view returns (string memory) {
+        return idToRaffle[raffleId].raffleData;
+    }
+
+    function getCreationFee() public view returns (uint256) {
+        return creationFee;
+    }
+    function getFeePercent() public view returns (uint256) {
+        return feePercent;
     }
     //Pure Functions
     function getPaymentAmount(uint _balance, uint _feePercent) pure public returns(uint pay, uint charge){
