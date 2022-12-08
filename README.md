@@ -1,34 +1,43 @@
 # 🤔 Existing Problem
 
 The fundamental problem with traditional lottery platforms is that they have numerous inefficiencies that lead to a great deal of mistrust between platform lottery hosts, developers, and players. The traditional lottery system is further hampered by high scale costs and subpar user experiences.Players may also experience difficulties with tiny and infrequent payouts, a lack of social contact, hidden fees, and a high danger of fraud. The cost of organization, lack of support for blockchain protocols, inability to offer enormous prizes, and very expensive licensing procedures are some of the most significant problems for enterprises and organizations.
-<!-- 
+
 **This is not a simple matter**
+Issues like the mcdonald lottery scheme show how scandalous the system can be
+The lottery industry is a very lucrative industry , trust in ongoing lottery games have waned and for the industry to thrive , people need to see transparent trustworthy raffle systems .
 
-*The below images are taken from the video [Undercover touts: how football ticket resale sites rip off fans](https://www.youtube.com/watch?v=NncEsk-xm5Y)*
-
-![Ticket Touting 1](https://i.imgur.com/fY5ENmgm.png "Ticket Touting")
-![Ticket Touting 2](https://i.imgur.com/MJD6UtWm.png "Ticket Touting")
-![Ticket Touting Legal](https://i.imgur.com/V1AWweal.png "Ticket Touting Legal")
-
-This has been going for 20+ years in the Football League. There are news of fans getting abused, attacked and killed because of tickets touting. To end this issue, the Federation needs a solution that does not exist to this problem, *or does it?*
--->
 
 # 🥳 DEFFLE
 
 Deffle is a solution to this problem by creating an easy to use platform that allows people create transparent trustworthy raffle lotteries on the blockchain , earn from their raffles and also give users trust that the lottery isnt being manipulated at any point in time
 
 
-<!-- 
-[![Hackathon-Video](https://media.giphy.com/media/FQMVedBETa0dVfCB7D/giphy.gif)](https://www.youtube.com/watch?v=MY-cvrlX3ao "Hackathon Video")
+# Deffle contract
 
-*Click on the video to view it on YouTube*
+This is the Deffle contract, a smart contract for managing a decentralized lottery creation system on the Ethereum blockchain.
 
-[Load Website](https://bafybeifclndlmnvrfqoewlxbgwdp2ybcxvvmlg2rgnyvz4nm2w5jay2vum.ipfs.gateway.valist.io/), or try [this](https://nft-ticket.vercel.app/)
+## Features
 
-## 🕵️ What are NFTs?
+- Secure and transparent: all lottery operations are recorded on the blockchain and can be verified by anyone.
 
-NFTs stand for Non-Fungible Tokens. They are unique on its own with different attributes per token that exists within a blockchain.
--->
+- Fair: the winner is chosen randomly and transparently using a verifiable random function.
+
+- Flexible: the contract allows for customization of the lottery parameters, such as the ticket price and the pool size.
+
+## Usage
+
+To use the Deffle contract, you will need a Polygon wallet and some MATIC to pay for the transaction fees.
+
+1. First, deploy the contract to the Ethereum blockchain using a suitable Polygon wallet or dApp.
+
+2. Create a raffle by triggering the create raffle function and setting a passCode
+
+3. The raffle can be accessed using its id and the passcode , and an entry is gotten by calling the enter raffle function 
+
+4. Once the deadline for purchasing tickets for that particular raffle has passed and atleast 1 person enters the raffle, the contract will use a verifiable random function to choose the winner randomly and transparently.
+
+5. The winner gets their prize sent to them automatically.
+
 ## 👨‍🔬 How is this a solution?
 
 Deffle is not governed by an organisation but by an immutable code (cannot be changed once deployed) displayed publicly so that there need not to be an authority to handle and oversee the whole lottery process, The winners are also picked randomly by using chainlink. This means, the lottery can happen in a way that it **cannot** be manipulated, but would pay winners and allow people participated depending on the conditions provided when creating the smart contract (the immutable code that governs the tickets - NFTs).
@@ -45,24 +54,14 @@ Deffle is not governed by an organisation but by an immutable code (cannot be ch
 
 
 
-<!-- 
-## ☄️ What's next for NFTicket?
+## ☄️ What's next for DEFFLE?
 
-NFTs are the way to go forward in every game/sport industry as each ticket can be controlled without a physical entity. We aim to make our project better using tools that will futher enhance this project to be viable on actual production enviornment in actually games. 
-In other words, think of a time where you can genuinly buy tickets for the inital price than overpriced secondary sales ; we're getting there.
--->
+Deffle would introduce payment APIs to ensure seamless funding from card to crypto to ensure smooth payment procedures.
+
 ## ⚡ Hackathon
 
 This project was made for [Polygon Africa Bootcamp hackathon](https://polygon.technology/africa-bootcamp/) 
-<!-- targetting the following bounties :
 
-- [SKALE](https://skale.space/) enables us to build a linear scaling zero gas fee dapp which can expand should we need more resources, and in events where we need to build more products. While this is still Work in Progress, we intend to move the entire application into [SKALE](https://skale.space/) where it will be gas-free and easily scalable according to traffic and requirement.
-
-- [The Graph](https://thegraph.com/en/) enables us to index tickets that were sold, and listed for re-fund or re-sell using events which are gas-friendly ; efficiently.
-
-- [Valist](https://www.valist.io/) enables us to deploy the dapp (web frontend) in a decentralized environment making sure that the website will not crash under any circumstances.
-
-- [Polygon](https://polygon.technology/) enables us to deploy contracts in L2 blockchain which helps handle traffic for the rush in the event in buying tickets. 
 -->
 ## 🔩 Project Structure
 
@@ -77,3 +76,12 @@ The contract was deployed on mumbai at [0x21190B74b28516c28F486589299A552eB33Dd2
 ## MORE INFO 
 [Landing Page](https://deffle-landing-page.on.fleek.co/)
 [Live Dapp](https://deffle-frontend-01.vercel.app/)
+
+
+## License
+
+The Deffle contract is licensed under the MIT license. See the `LICENSE` file for more details.
+
+## Contact
+
+If you have any questions or issues with the Deffle contract, please contact the developers at [otaikisadiq2804@gmail.com], [pelzfx@gmail.com].
