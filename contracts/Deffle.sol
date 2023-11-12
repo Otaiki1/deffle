@@ -14,15 +14,15 @@ error Error__UpkeepNotTrue();
 error Error__RafflePaymentFailed();
 error Error__NotOwner();
 error Error__ZeroAmount();
-contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
 
-    enum RaffleState{
+contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
+    enum RaffleState {
         Open,
         Calculating,
         Closed
     }
 
-    struct Raffle{
+    struct Raffle {
         string raffleData;
         uint256 entranceFee;
         uint256 deadline;
@@ -59,41 +59,51 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     //keep track of raffle requesting randomness
     uint256 currentId;
 
-
     event Deffle__RaffleCreated(uint raffleId, address indexed raffleOwner);
-    event Deffle__EnterRaffle(uint raffleId, address indexed participant, uint8 indexed totalParticipants);
+    event Deffle__EnterRaffle(
+        uint raffleId,
+        address indexed participant,
+        uint8 indexed totalParticipants
+    );
     event RequestedRaffleWinner(uint256 indexed requestId);
-    event Deffle__WinnerPicked(uint raffleId, address indexed raffleWinner, uint indexed raffleEarnings);
+    event Deffle__WinnerPicked(
+        uint raffleId,
+        address indexed raffleWinner,
+        uint indexed raffleEarnings
+    );
     event Deffle__EarningsWithdrawn(uint indexed _deffleEarnings);
-    constructor(address vrfCoordinatorV2,
+
+    constructor(
+        address vrfCoordinatorV2,
         uint256 _creationFee,
-        bytes32 gasLane, //keyhash 
+        bytes32 gasLane, //keyhash
         uint64 subscriptionId,
         uint32 callbackGasLimit,
         uint256 _feePercent
-    )
-    VRFConsumerBaseV2(vrfCoordinatorV2)
-    {
+    ) VRFConsumerBaseV2(vrfCoordinatorV2) {
         owner = payable(msg.sender);
         creationFee = _creationFee;
         feePercent = _feePercent;
         //chainlinkstuff
         i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
         i_gasLane = gasLane;
-        i_subscriptionId = subscriptionId ;
+        i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
     }
-    
 
-    function createRaffle(string memory _raffleData,
-    uint256 _entranceFee,
-    uint256 _deadline,
-    uint8 _maxTickets,
-    bytes memory _passCode ) external payable{
-        if(msg.value < creationFee ||
+    function createRaffle(
+        string memory _raffleData,
+        uint256 _entranceFee,
+        uint256 _deadline,
+        uint8 _maxTickets,
+        bytes memory _passCode
+    ) external payable {
+        if (
+            msg.value < creationFee ||
             _deadline < block.timestamp ||
             _maxTickets <= 1 ||
-            _entranceFee <= 0){
+            _entranceFee <= 0
+        ) {
             revert Error__CreateRaffle();
         }
 
@@ -107,90 +117,96 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         idToRaffle[id].deadline = _deadline;
         idToRaffle[id].maxTickets = _maxTickets;
         idToRaffle[id].owner = payable(msg.sender);
-        idToRaffle[id].raffleState= RaffleState.Open;
-        idToRaffle[id].passCode= _passCode;
+        idToRaffle[id].raffleState = RaffleState.Open;
+        idToRaffle[id].passCode = _passCode;
 
         //update idlist array
         idList.push(id);
 
-        emit Deffle__RaffleCreated(id, msg.sender); 
-        
+        emit Deffle__RaffleCreated(id, msg.sender);
     }
 
-    function enterRaffle(uint256 raffleId, bytes memory _passCode) external payable{
-
-        if((raffleId == 0) ||
-        (idToRaffle[raffleId].raffleState != RaffleState.Open)||
-        (msg.value < idToRaffle[raffleId].entranceFee)||
-        (idToRaffle[raffleId].deadline < block.timestamp)||
-        (idToRaffle[raffleId].participants.length == idToRaffle[raffleId].maxTickets)||
-        (keccak256(idToRaffle[raffleId].passCode)  != keccak256(_passCode))||
-        (idList.length < raffleId)||
-        (msg.sender == idToRaffle[raffleId].owner)
-        ){
+    function enterRaffle(
+        uint256 raffleId,
+        bytes memory _passCode
+    ) external payable {
+        if (
+            (raffleId == 0) ||
+            (idToRaffle[raffleId].raffleState != RaffleState.Open) ||
+            (msg.value < idToRaffle[raffleId].entranceFee) ||
+            (idToRaffle[raffleId].deadline < block.timestamp) ||
+            (idToRaffle[raffleId].participants.length ==
+                idToRaffle[raffleId].maxTickets) ||
+            (keccak256(idToRaffle[raffleId].passCode) !=
+                keccak256(_passCode)) ||
+            (idList.length < raffleId) ||
+            (msg.sender == idToRaffle[raffleId].owner)
+        ) {
             revert Error__EnterRaffle();
         }
 
-        
         //update the array of participants
         idToRaffle[raffleId].participants.push(payable(msg.sender));
         idToRaffle[raffleId].raffleBalance += msg.value;
 
         //get total participants
-        uint8 totalParticipants  = getNumberOfPlayers(raffleId);
+        uint8 totalParticipants = getNumberOfPlayers(raffleId);
         //emit enter raffle event
         emit Deffle__EnterRaffle(raffleId, msg.sender, totalParticipants);
     }
 
-    function checkUpkeep(bytes memory /*checkdata */)
-    public view override returns(
-        bool upkeepNeeded,
-        bytes memory performData 
-    ){
+    function checkUpkeep(
+        bytes memory /*checkdata */
+    )
+        public
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
         upkeepNeeded = false;
         uint8 sureId;
         for (uint256 i = 0; i < getIdList().length && !upkeepNeeded; i++) {
-            bool isOpen = RaffleState.Open == getRaffleState(i+1);
-            bool timePassed = block.timestamp > getDeadline(i+1);
-            bool hasBalance  = getRaffleBalance(i+1) > 0;
-            bool hasPlayers = getNumberOfPlayers(i+1) > 0;
+            bool isOpen = RaffleState.Open == getRaffleState(i + 1);
+            bool timePassed = block.timestamp > getDeadline(i + 1);
+            bool hasBalance = getRaffleBalance(i + 1) > 0;
+            bool hasPlayers = getNumberOfPlayers(i + 1) > 0;
             if (isOpen && timePassed && hasBalance && hasPlayers) {
                 upkeepNeeded = true;
-                sureId = uint8(i+1);
+                sureId = uint8(i + 1);
             }
         }
         return (upkeepNeeded, abi.encode(sureId));
     }
 
-    function performUpkeep(bytes calldata /* performData*/ ) external override {
-
+    function performUpkeep(bytes calldata /* performData*/) external override {
         (bool upkeepNeeded, bytes memory idInBytes) = checkUpkeep("0x");
-        if(!upkeepNeeded){
+        if (!upkeepNeeded) {
             revert Error__UpkeepNotTrue();
         }
 
-        currentId = abi.decode(idInBytes,(uint8));
+        currentId = abi.decode(idInBytes, (uint8));
 
         idToRaffle[currentId].raffleState = RaffleState.Calculating;
         //request random number
         uint256 requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane,
-            i_subscriptionId, 
-            REQUEST_CONFIRMATIONS, 
-            i_callbackGasLimit, 
-            NUM_WORDS);
+            i_subscriptionId,
+            REQUEST_CONFIRMATIONS,
+            i_callbackGasLimit,
+            NUM_WORDS
+        );
         emit RequestedRaffleWinner(requestId);
-        
     }
 
     function fulfillRandomWords(
-        uint256, /*request id*/
+        uint256 /*request id*/,
         uint256[] memory randomWords
-    ) internal override{
-
-
-        uint256 indexOfWinner = randomWords[0] % idToRaffle[currentId].participants.length;
-        address payable _raffleWinner =  idToRaffle[currentId].participants[indexOfWinner];
+    ) internal override {
+        uint256 indexOfWinner = randomWords[0] %
+            idToRaffle[currentId].participants.length;
+        address payable _raffleWinner = idToRaffle[currentId].participants[
+            indexOfWinner
+        ];
         uint _raffleBalance = idToRaffle[currentId].raffleBalance;
 
         //update state variables
@@ -199,37 +215,39 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         idToRaffle[currentId].raffleBalance = 0;
         //calculate how much to pay winner;
         //calculate how much goes to owner of raffle
-        (uint winnersPay, uint ownersPay) = getPaymentAmount(_raffleBalance, feePercent);
+        (uint winnersPay, uint ownersPay) = getPaymentAmount(
+            _raffleBalance,
+            feePercent
+        );
         //Pay winners and owner
         (bool success, ) = _raffleWinner.call{value: winnersPay}("");
-        (bool success2, ) = idToRaffle[currentId].owner.call{value: ownersPay}("");
+        (bool success2, ) = idToRaffle[currentId].owner.call{value: ownersPay}(
+            ""
+        );
         //check
-        if(!success && !success2){
+        if (!success && !success2) {
             revert Error__RafflePaymentFailed();
         }
         emit Deffle__WinnerPicked(currentId, _raffleWinner, _raffleBalance);
-        
     }
 
-
     function withdrawDeffleEarnings() external {
-        if(msg.sender != owner){
+        if (msg.sender != owner) {
             revert Error__NotOwner();
         }
-        if(deffleEarnings == 0){
+        if (deffleEarnings == 0) {
             revert Error__ZeroAmount();
         }
 
         uint _deffleEarnings = deffleEarnings;
         deffleEarnings = 0;
-        
+
         (bool success, ) = owner.call{value: _deffleEarnings}("");
         //check
-        if(!success){
+        if (!success) {
             revert Error__RafflePaymentFailed();
         }
         emit Deffle__EarningsWithdrawn(_deffleEarnings);
-
     }
 
     /** Getter Functions */
@@ -250,7 +268,9 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         return idToRaffle[raffleId].raffleWinner;
     }
 
-    function getPlayers(uint raffleId) public view returns (address payable[] memory) {
+    function getPlayers(
+        uint raffleId
+    ) public view returns (address payable[] memory) {
         address payable[] storage tempArray = idToRaffle[raffleId].participants;
         return tempArray;
     }
@@ -258,7 +278,6 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     function getDeadline(uint raffleId) public view returns (uint256) {
         return idToRaffle[raffleId].deadline;
     }
-
 
     function getEntranceFee(uint raffleId) public view returns (uint256) {
         return idToRaffle[raffleId].entranceFee;
@@ -271,15 +290,19 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     function getMaxPlayers(uint raffleId) public view returns (uint8) {
         return idToRaffle[raffleId].maxTickets;
     }
+
     function getRaffleBalance(uint raffleId) public view returns (uint) {
         return idToRaffle[raffleId].raffleBalance;
     }
+
     function getIdList() public view returns (uint8[] memory) {
         return idList;
     }
+
     function getRaffleOwner(uint raffleId) public view returns (address) {
         return idToRaffle[raffleId].owner;
     }
+
     function getRaffleData(uint raffleId) public view returns (string memory) {
         return idToRaffle[raffleId].raffleData;
     }
@@ -287,14 +310,18 @@ contract Deffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     function getCreationFee() public view returns (uint256) {
         return creationFee;
     }
+
     function getFeePercent() public view returns (uint256) {
         return feePercent;
     }
+
     //Pure Functions
-    function getPaymentAmount(uint _balance, uint _feePercent) pure public returns(uint pay, uint charge){
-        uint totalAmount = (_balance * (100 + _feePercent)/100);
+    function getPaymentAmount(
+        uint _balance,
+        uint _feePercent
+    ) public pure returns (uint pay, uint charge) {
+        uint totalAmount = ((_balance * (100 + _feePercent)) / 100);
         charge = totalAmount - _balance;
-        pay = _balance - charge; 
-    } 
-    
+        pay = _balance - charge;
+    }
 }

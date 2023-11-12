@@ -219,11 +219,9 @@ const FUTURE_TIME = 60 * 60 * 1000;
           //...later, test for closed raffle state
           //Testing for insufficient msg.value
           await expect(
-            deffle
-              .connect(addr3)
-              .enterRaffle(raffleId, correctPassCode, {
-                value: toEther("0.01"),
-              })
+            deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+              value: toEther("0.01"),
+            })
           ).to.be.revertedWith("Error__EnterRaffle");
           //Test for past deadline
           //...later test fornumber of participants passed
@@ -241,21 +239,17 @@ const FUTURE_TIME = 60 * 60 * 1000;
           ).to.be.revertedWith("Error__EnterRaffle");
           //Test to ensure owner cant enter raffle
           await expect(
-            deffle
-              .connect(addr2)
-              .enterRaffle(raffleId, correctPassCode, {
-                value: correctEntranceFee,
-              })
+            deffle.connect(addr2).enterRaffle(raffleId, correctPassCode, {
+              value: correctEntranceFee,
+            })
           ).to.be.revertedWith("Error__EnterRaffle");
         });
 
         it("successfully enters a raffle and emits the right events", async () => {
           await expect(
-            deffle
-              .connect(addr3)
-              .enterRaffle(raffleId, correctPassCode, {
-                value: correctEntranceFee,
-              })
+            deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+              value: correctEntranceFee,
+            })
           )
             .to.emit(deffle, "Deffle__EnterRaffle")
             .withArgs(raffleId, addr3.address, 1);
@@ -272,21 +266,15 @@ const FUTURE_TIME = 60 * 60 * 1000;
           );
 
           //enter raffle
-          await deffle
-            .connect(addr3)
-            .enterRaffle(raffleId, correctPassCode, {
-              value: correctEntranceFee,
-            });
-          await deffle
-            .connect(addr3)
-            .enterRaffle(raffleId, correctPassCode, {
-              value: correctEntranceFee,
-            });
-          await deffle
-            .connect(addr3)
-            .enterRaffle(raffleId, correctPassCode, {
-              value: correctEntranceFee,
-            });
+          await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+            value: correctEntranceFee,
+          });
+          await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+            value: correctEntranceFee,
+          });
+          await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+            value: correctEntranceFee,
+          });
 
           const participantsAfterEntry = await deffle.getNumberOfPlayers(
             raffleId
@@ -336,11 +324,9 @@ const FUTURE_TIME = 60 * 60 * 1000;
         });
 
         it("returns false if raffle isn't open", async () => {
-          await deffle
-            .connect(addr3)
-            .enterRaffle(raffleId, correctPassCode, {
-              value: correctEntranceFee,
-            });
+          await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+            value: correctEntranceFee,
+          });
 
           await increaseTime();
 
@@ -356,21 +342,17 @@ const FUTURE_TIME = 60 * 60 * 1000;
           assert.equal(raffleState.toString() == "1", upkeepNeeded == false);
         });
         it("returns false if enough time hasn't passed", async () => {
-          await deffle
-            .connect(addr3)
-            .enterRaffle(raffleId, correctPassCode, {
-              value: correctEntranceFee,
-            });
+          await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+            value: correctEntranceFee,
+          });
 
           const { upkeepNeeded } = await deffle.callStatic.checkUpkeep("0x"); // upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers)
           expect(upkeepNeeded).to.eq(false);
         });
         it("returns true if enough time has passed, has players, eth, and is open", async () => {
-          await deffle
-            .connect(addr3)
-            .enterRaffle(raffleId, correctPassCode, {
-              value: correctEntranceFee,
-            });
+          await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+            value: correctEntranceFee,
+          });
           await network.provider.send("evm_increaseTime", [
             correctDeadline + 1,
           ]);
@@ -454,11 +436,9 @@ const FUTURE_TIME = 60 * 60 * 1000;
             );
           const txReceipt = await txResponse.wait(1);
           raffleId = txReceipt.events[0].args.raffleId.toString();
-          await deffle
-            .connect(addr3)
-            .enterRaffle(raffleId, correctPassCode, {
-              value: correctEntranceFee,
-            });
+          await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+            value: correctEntranceFee,
+          });
           await increaseTime();
         });
 
@@ -555,11 +535,9 @@ const FUTURE_TIME = 60 * 60 * 1000;
             );
           const txReceipt = await txResponse.wait(1);
           raffleId = txReceipt.events[0].args.raffleId.toString();
-          await deffle
-            .connect(addr3)
-            .enterRaffle(raffleId, correctPassCode, {
-              value: correctEntranceFee,
-            });
+          await deffle.connect(addr3).enterRaffle(raffleId, correctPassCode, {
+            value: correctEntranceFee,
+          });
           await increaseTime();
           await deffle.getRaffleBalance(raffleId);
 
