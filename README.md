@@ -7,14 +7,14 @@ Issues like the mcdonald lottery scheme show how scandalous the system can be
 The lottery industry is a very lucrative industry , trust in ongoing lottery games have waned and for the industry to thrive , people need to see transparent trustworthy raffle systems .
 
 
-# 🥳 DEFFLE
+# 🥳 LuckyBlock
 
-Deffle is a solution to this problem by creating an easy to use platform that allows people create transparent trustworthy raffle lotteries on the blockchain , earn from their raffles and also give users trust that the lottery isnt being manipulated at any point in time
+LuckyBlock is a solution to this problem by creating an easy to use platform that allows people create transparent trustworthy raffle lotteries on the blockchain , earn from their raffles and also give users trust that the lottery isnt being manipulated at any point in time
 
 
-# Deffle contract
+# LuckyBlock contract
 
-This is the Deffle contract, a smart contract for managing a decentralized lottery creation system on the Ethereum blockchain.
+This is the LuckyBlock contract, a smart contract for managing a decentralized lottery creation system on the Polygon blockchain.
 
 ## Features
 
@@ -26,7 +26,7 @@ This is the Deffle contract, a smart contract for managing a decentralized lotte
 
 ## Usage
 
-To use the Deffle contract, you will need a Polygon wallet and some MATIC to pay for the transaction fees.
+To use the LuckyBlock contract, you will need a Polygon wallet and some MATIC to pay for the transaction fees.
 
 1. First, deploy the contract to the Ethereum blockchain using a suitable Polygon wallet or dApp.
 
@@ -40,7 +40,7 @@ To use the Deffle contract, you will need a Polygon wallet and some MATIC to pay
 
 ## 👨‍🔬 How is this a solution?
 
-Deffle is not governed by an organisation but by an immutable code (cannot be changed once deployed) displayed publicly so that there need not to be an authority to handle and oversee the whole lottery process, The winners are also picked randomly by using chainlink. This means, the lottery can happen in a way that it **cannot** be manipulated, but would pay winners and allow people participated depending on the conditions provided when creating the smart contract (the immutable code that governs the tickets - NFTs).
+LuckyBlock is not governed by an organisation but by an immutable code (cannot be changed once deployed) displayed publicly so that there need not to be an authority to handle and oversee the whole lottery process, The winners are also picked randomly by using chainlink. This means, the lottery can happen in a way that it **cannot** be manipulated, but would pay winners and allow people participated depending on the conditions provided when creating the smart contract (the immutable code that governs the tickets - NFTs).
 
 ## 👊 Team
 
@@ -54,13 +54,10 @@ Deffle is not governed by an organisation but by an immutable code (cannot be ch
 
 
 
-## ☄️ What's next for DEFFLE?
+## ☄️ What's next for LuckyBlock?
 
-Deffle would introduce payment APIs to ensure seamless funding from card to crypto to ensure smooth payment procedures.
+LuckyBlock would introduce payment APIs to ensure seamless funding from card to crypto to ensure smooth payment procedures.
 
-## ⚡ Hackathon
-
-This project was made for [Polygon Africa Bootcamp hackathon](https://polygon.technology/africa-bootcamp/) 
 
 -->
 ## 🔩 Project Structure
@@ -80,7 +77,7 @@ The contract was deployed on mumbai at [0x21190B74b28516c28F486589299A552eB33Dd2
 
 ## License
 
-The Deffle contract is licensed under the MIT license. See the `LICENSE` file for more details.
+The LuckyBlock contract is licensed under the MIT license. See the `LICENSE` file for more details.
 
 ## Contact
 
